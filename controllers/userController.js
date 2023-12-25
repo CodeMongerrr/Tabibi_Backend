@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const bcrypt = require("bcrypt");
+// const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const Doctor = require("../models/doctorModel");
 const Appointment = require("../models/appointmentModel");
@@ -10,19 +10,18 @@ const getuser = async (req, res) => {
     return res.send(user);
   } catch (error) {
     res.status(500).send("Unable to get user");
-  }
-};
+  }};
 
-const getallusers = async (req, res) => {
-  try {
-    const users = await User.find()
-      .find({ _id: { $ne: req.locals } })
-      .select("-password");
-    return res.send(users);
-  } catch (error) {
-    res.status(500).send("Unable to get all users");
-  }
-};
+  const getallusers = async (req, res) => {
+    try {
+      const users = await User.find()
+        .find({ _id: { $ne: req.locals } })
+        .select("-password");
+      return res.send(users);
+    } catch (error) {
+      res.status(500).send("Unable to get all users");
+    }
+  };
 
 const login = async (req, res) => {
   try {
@@ -30,13 +29,10 @@ const login = async (req, res) => {
     if (!emailPresent) {
       return res.status(400).send("Incorrect credentials");
     }
-    const verifyPass = await bcrypt.compare(
-      req.body.password,
-      emailPresent.password
-    );
-    if (!verifyPass) {
-      return res.status(400).send("Incorrect credentials");
-    }
+    // const verifyPass = await argon2.verify(emailPresent.password, req.body.password);
+    // if (!verifyPass) {
+    //   return res.status(400).send("Incorrect credentials");
+    // }
     const token = jwt.sign(
       { userId: emailPresent._id, isAdmin: emailPresent.isAdmin },
       process.env.JWT_SECRET,
@@ -44,8 +40,7 @@ const login = async (req, res) => {
         expiresIn: "2 days",
       }
     );
-    return res.status(201).send({ msg: "User logged in successfully", token });
-  } catch (error) {
+    return res.status(201).send({ msg: "User logged in successfully", token });  } catch (error) {
     res.status(500).send("Unable to login user");
   }
 };
@@ -56,30 +51,29 @@ const register = async (req, res) => {
     if (emailPresent) {
       return res.status(400).send("Email already exists");
     }
-    const hashedPass = await bcrypt.hash(req.body.password, 10);
-    const user = await User({ ...req.body, password: hashedPass });
+    // const hashedPass = await argon2.hash(req.body.password);
+    const user = await User({ ...req.body, password: req.body.password });
+    console.log(user);
     const result = await user.save();
     if (!result) {
       return res.status(500).send("Unable to register user");
     }
-    return res.status(201).send("User registered successfully");
-  } catch (error) {
+    return res.status(201).send("User registered successfully");  } catch (error) {
     res.status(500).send("Unable to register user");
   }
 };
 
 const updateprofile = async (req, res) => {
   try {
-    const hashedPass = await bcrypt.hash(req.body.password, 10);
+    // const hashedPass = await argon2.hash(req.body.password);
     const result = await User.findByIdAndUpdate(
       { _id: req.locals },
-      { ...req.body, password: hashedPass }
+      { ...req.body, password: req.body.password }
     );
     if (!result) {
       return res.status(500).send("Unable to update user");
     }
-    return res.status(201).send("User updated successfully");
-  } catch (error) {
+    return res.status(201).send("User updated successfully");  } catch (error) {
     res.status(500).send("Unable to update user");
   }
 };

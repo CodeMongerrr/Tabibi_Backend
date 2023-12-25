@@ -1,0 +1,13 @@
+version: '3'
+services:
+  backend:
+    image: node:14 # You can choose the Node.js version you need
+    container_name: express-backend
+    working_dir: /app
+    volumes:
+      - ./app:/app # Mount your Express.js app directory into the container
+    ports:
+      - "5000:5000" # Map the container's port 3000 to host port 3000
+    environment:
+      - NODE_ENV=production # Set your Node.js environment (production or development)
+    command: npm start # Replace with your startup command (e.g., npm start)

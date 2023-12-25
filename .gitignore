@@ -106,3 +106,5 @@ dist
 /client/node_modules
 /client/.env
 /client/.vscode
+node_modules
+/node_modules
